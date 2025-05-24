@@ -10,3 +10,7 @@ class Family(Base):
     value = Column(Text)
 
     games = relationship("Game", secondary="family_game", back_populates="families")
+
+    @classmethod
+    def from_link(cls, link):
+        return cls(id=link["@id"], value=link["@value"])

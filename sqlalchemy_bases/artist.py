@@ -10,3 +10,7 @@ class Artist(Base):
     value = Column(Text)
 
     games = relationship("Game", secondary="artist_game", back_populates="artists")
+
+    @classmethod
+    def from_link(cls, link):
+        return cls(id=link["@id"], value=link["@value"])

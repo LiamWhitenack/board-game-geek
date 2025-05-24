@@ -7,3 +7,7 @@ class Mechanic(Base):
     __tablename__ = "mechanic"
     id = Column(Integer, primary_key=True)
     value = Column(Text)
+
+    @classmethod
+    def from_link(cls, link):
+        return cls(id=link["@id"], value=link["@value"])

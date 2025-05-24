@@ -75,26 +75,50 @@ class Game(Base):
     )
 
     @classmethod
-    def from_json(cls, item: dict) -> Game:
-        def get_language_dependence(item: dict) -> str:
-            votes: list[dict[str, str]] = item["poll"][2]["results"]["result"]
-            return max(votes, key=lambda x: int(x["@numvotes"]))["@value"]
+    def from_json(cls, data):
+        item = data["items"]["item"]
+
+        def extract_name(names):
+            for name in names:
+                if name["@type"] == "primary":
+                    return name["@value"]
+            return None
+
+        def extract_poll_summary(poll):
+            best = None
+            recommended = None
+            for entry in poll.get("poll-summary", {}).get("result", []):
+                if entry["@name"] == "bestwith":
+                    best = entry["@value"]
+                elif entry["@name"] == "recommmendedwith":
+                    recommended = entry["@value"]
+            return best, recommended
+
+        best_count, recommended_counts = extract_poll_summary(item)
 
         return cls(
             id=int(item["@id"]),
-            thumbnail=item.get("thumbnail", ""),
-            image=item.get("image", ""),
-            description=item.get("description", ""),
-            year_published=int(item["yearpublished"]["@value"]),
-            min_players=int(item["minplayers"]["@value"]),
-            max_players=int(item["maxplayers"]["@value"]),
-            best_player_count=item["poll-summary"]["result"][0]["@value"],
-            language_dependence=get_language_dependence(item),
-            recommended_player_counts=item["poll-summary"]["result"][1]["@value"],
-            playing_time=int(item["playingtime"]["@value"]),
-            min_play_time=int(item["minplaytime"]["@value"]),
-            max_play_time=int(item["maxplaytime"]["@value"]),
-            min_age=int(item["minage"]["@value"]),
-            expansion=item["@type"] == "boardgameexpansion",
-            name=item["name"][0]["@value"],
+            thumbnail=item.get("thumbnail"),
+            image=item.get("image"),
+            name=extract_name(item.get("name", [])),
+            description=item.get("description"),
+            year_published=int(item.get("yearpublished", {}).get("@value", 0)),
+            min_players=int(item.get("minplayers", {}).get("@value", 0)),
+            max_players=int(item.get("maxplayers", {}).get("@value", 0)),
+            best_player_count=best_count,
+            recommended_player_counts=recommended_counts,
+            language_dependence=cls.extract_language_dependence(item),
+            playing_time=int(item.get("playingtime", {}).get("@value", 0)),
+            min_play_time=int(item.get("minplaytime", {}).get("@value", 0)),
+            max_play_time=int(item.get("maxplaytime", {}).get("@value", 0)),
+            min_age=int(item.get("minage", {}).get("@value", 0)),
         )
+
+    @staticmethod
+    def extract_language_dependence(item):
+        for poll in item.get("poll", []):
+            if poll["@name"] == "language_dependence":
+                results = poll["results"]["result"]
+                top = max(results, key=lambda r: int(r.get("@numvotes", 0)))
+                return top.get("@value")
+        return None

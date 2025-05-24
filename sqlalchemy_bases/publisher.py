@@ -12,3 +12,7 @@ class Publisher(Base):
     games = relationship(
         "Game", secondary="publisher_game", back_populates="publishers"
     )
+
+    @classmethod
+    def from_link(cls, link):
+        return cls(id=link["@id"], value=link["@value"])
