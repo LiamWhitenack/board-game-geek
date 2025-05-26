@@ -1,8 +1,12 @@
 from __future__ import annotations
 
-from sqlalchemy import Column, Integer, Text
-from sqlalchemy.orm import relationship
+from typing import Optional
 
+from sqlalchemy import Column, Integer, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from other_classes.item import Item
+from other_classes.link import Link
 from sqlalchemy_bases import Base
 from sqlalchemy_bases.accessory import Accessory
 from sqlalchemy_bases.artist import Artist
@@ -22,21 +26,21 @@ from sqlalchemy_bases.publisher_game import PublisherGame
 
 class Game(Base):
     __tablename__ = "game"
-    id = Column(Integer, primary_key=True)
-    thumbnail = Column(Text)
-    image = Column(Text)
-    description = Column(Text)
-    year_published = Column(Integer)
-    min_players = Column(Integer)
-    max_players = Column(Integer)
-    best_player_count = Column(Integer)
-    language_dependence = Column(Text)
-    recommended_player_counts = Column(Text)
-    playing_time = Column(Integer)
-    min_play_time = Column(Integer)
-    max_play_time = Column(Integer)
-    min_age = Column(Integer)
-    name = Column(Text)
+    id = mapped_column(Integer, primary_key=True)
+    name = mapped_column(Text)
+    thumbnail: Mapped[str | None] = mapped_column(Text)
+    image: Mapped[str | None] = mapped_column(Text)
+    description: Mapped[str | None] = mapped_column(Text)
+    year_published: Mapped[str | None] = mapped_column(Integer)
+    min_players: Mapped[str | None] = mapped_column(Integer)
+    max_players: Mapped[str | None] = mapped_column(Integer)
+    best_player_count: Mapped[str | None] = mapped_column(Integer)
+    language_dependence: Mapped[str | None] = mapped_column(Text)
+    recommended_player_counts: Mapped[str | None] = mapped_column(Text)
+    playing_time: Mapped[str | None] = mapped_column(Integer)
+    min_play_time: Mapped[str | None] = mapped_column(Integer)
+    max_play_time: Mapped[str | None] = mapped_column(Integer)
+    min_age: Mapped[str | None] = mapped_column(Integer)
 
     # Relationships
     artists = relationship("Artist", secondary="artist_game", back_populates="games")
@@ -90,47 +94,44 @@ class Game(Base):
     )
 
     @classmethod
-    def from_json(cls, item):
-        def extract_name(name: list[dict] | dict):
-            if isinstance(name, list):
-                return extract_name(name[0])
-            return name["@value"]
-
-        def extract_poll_summary(poll):
-            best = None
-            recommended = None
-            for entry in poll.get("poll-summary", {}).get("result", []):
-                if entry["@name"] == "bestwith":
-                    best = entry["@value"]
-                elif entry["@name"] == "recommmendedwith":
-                    recommended = entry["@value"]
-            return best, recommended
-
-        best_count, recommended_counts = extract_poll_summary(item)
+    def from_item(cls, item: Item):
 
         return cls(
-            id=int(item["@id"]),
-            thumbnail=item.get("thumbnail"),
-            image=item.get("image"),
-            name=extract_name(item.get("name", [])),
-            description=item.get("description"),
-            year_published=int(item.get("yearpublished", {}).get("@value", 0)),
-            min_players=int(item.get("minplayers", {}).get("@value", 0)),
-            max_players=int(item.get("maxplayers", {}).get("@value", 0)),
-            best_player_count=best_count,
-            recommended_player_counts=recommended_counts,
-            language_dependence=cls.extract_language_dependence(item),
-            playing_time=int(item.get("playingtime", {}).get("@value", 0)),
-            min_play_time=int(item.get("minplaytime", {}).get("@value", 0)),
-            max_play_time=int(item.get("maxplaytime", {}).get("@value", 0)),
-            min_age=int(item.get("minage", {}).get("@value", 0)),
+            id=int(item._id),
+            thumbnail=item.thumbnail,
+            image=item.image,
+            name=item.name,
+            description=item.description,
+            year_published=item.yearpublished,
+            min_players=item.min_players,
+            max_players=item.max_players,
+            best_player_count=item.best_player_count,
+            recommended_player_counts=item.recommended_player_counts,
+            language_dependence=item.language_dependence,
+            playing_time=item.playing_time,
+            min_play_time=item.min_play_time,
+            max_play_time=item.max_play_time,
+            min_age=item.min_age,
         )
 
-    @staticmethod
-    def extract_language_dependence(item):
-        for poll in item.get("poll", []):
-            if poll["@name"] == "language_dependence":
-                results = poll["results"]["result"]
-                top = max(results, key=lambda r: int(r.get("@numvotes", 0)))
-                return top.get("@value")
-        return None
+    @classmethod
+    def from_link(cls, link: Link):
+        return cls(
+            id=link._id,
+            name=link._value,
+        )
+
+    def enrich(self, item: Item):
+        self.thumbnail = item.thumbnail
+        self.image = item.image
+        self.description = item.description
+        self.year_published = item.yearpublished  # type: ignore[assignment]
+        self.min_players = item.min_players  # type: ignore[assignment]
+        self.max_players = item.max_players  # type: ignore[assignment]
+        self.best_player_count = item.best_player_count
+        self.recommended_player_counts = item.recommended_player_counts
+        self.language_dependence = item.language_dependence
+        self.playing_time = item.playing_time  # type: ignore[assignment]
+        self.min_play_time = item.min_play_time  # type: ignore[assignment]
+        self.max_play_time = item.max_play_time  # type: ignore[assignment]
+        self.min_age = item.min_age  # type: ignore[assignment]
