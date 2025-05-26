@@ -17,7 +17,7 @@ from sqlalchemy_bases.publisher import Publisher
 
 def fetch_things(
     ids: Iterable[int], max_retries: int = 5, retries: int = 0
-) -> dict | None:
+) -> list[dict]:
     url = f"https://www.boardgamegeek.com/xmlapi2/thing?id={','.join(map(str, ids))}"
     retries = 0
     while retries < max_retries:
@@ -32,7 +32,7 @@ def fetch_things(
         else:
             print(f"Unexpected status: {response.status_code}")
             break
-    return None
+    raise Exception()
 
 
 LINK_MAP = dict(
