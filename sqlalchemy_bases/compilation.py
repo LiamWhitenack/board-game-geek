@@ -7,3 +7,7 @@ class Compilation(Base):
     __tablename__ = "compilation"
     compilation_id = Column(Integer, ForeignKey("game.id"), primary_key=True)
     contained_id = Column(Integer, ForeignKey("game.id"))
+
+    @classmethod
+    def from_link(cls, link: dict):
+        return cls(original_id=link["@reference_id"], expansion_id=link["@id"])

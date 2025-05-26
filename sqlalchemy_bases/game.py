@@ -5,9 +5,19 @@ from sqlalchemy.orm import relationship
 
 from sqlalchemy_bases import Base
 from sqlalchemy_bases.accessory import Accessory
+from sqlalchemy_bases.artist import Artist
+from sqlalchemy_bases.artist_game import ArtistGame
+from sqlalchemy_bases.category import Category
+from sqlalchemy_bases.category_game import CategoryGame
 from sqlalchemy_bases.compilation import Compilation
+from sqlalchemy_bases.designer_game import DesignerGame
 from sqlalchemy_bases.expansion import Expansion
+from sqlalchemy_bases.family import Family
+from sqlalchemy_bases.family_game import FamilyGame
 from sqlalchemy_bases.implementation import Implementation
+from sqlalchemy_bases.mechanic import Mechanic
+from sqlalchemy_bases.publisher import Publisher
+from sqlalchemy_bases.publisher_game import PublisherGame
 
 
 class Game(Base):
@@ -26,12 +36,13 @@ class Game(Base):
     min_play_time = Column(Integer)
     max_play_time = Column(Integer)
     min_age = Column(Integer)
-    expansion = Column(Integer)
-    accessory = Column(Integer)
     name = Column(Text)
 
     # Relationships
     artists = relationship("Artist", secondary="artist_game", back_populates="games")
+    designers = relationship(
+        "Designer", secondary="designer_game", back_populates="games"
+    )
     categories = relationship(
         "Category", secondary="category_game", back_populates="games"
     )
@@ -41,10 +52,14 @@ class Game(Base):
     )
 
     accessory_for = relationship(
-        "Accessory", foreign_keys=[Accessory.accessory_id], backref="accessory_game"
+        "Accessory",
+        foreign_keys=[Accessory.accessory_id],
+        back_populates="accessory_game",
     )
     accessories = relationship(
-        "Accessory", foreign_keys=[Accessory.original_id], backref="original_game"
+        "Accessory",
+        foreign_keys=[Accessory.original_id],
+        back_populates="original_game",
     )
 
     expansions = relationship(
@@ -75,14 +90,11 @@ class Game(Base):
     )
 
     @classmethod
-    def from_json(cls, data):
-        item = data["items"]["item"]
-
-        def extract_name(names):
-            for name in names:
-                if name["@type"] == "primary":
-                    return name["@value"]
-            return None
+    def from_json(cls, item):
+        def extract_name(name: list[dict] | dict):
+            if isinstance(name, list):
+                return extract_name(name[0])
+            return name["@value"]
 
         def extract_poll_summary(poll):
             best = None
