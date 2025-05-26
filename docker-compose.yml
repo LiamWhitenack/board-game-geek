@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16
+    container_name: my-postgres-db
+    environment:
+      POSTGRES_DB: bgg-db
+      POSTGRES_USER: lwhitenack
+      POSTGRES_PASSWORD: testpword
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:
