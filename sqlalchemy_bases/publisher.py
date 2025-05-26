@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, Text
 from sqlalchemy.orm import relationship
 
+from other_classes.link import Link
 from sqlalchemy_bases import Base
 
 
@@ -14,5 +15,5 @@ class Publisher(Base):
     )
 
     @classmethod
-    def from_link(cls, link):
-        return cls(id=link["@id"], value=link["@value"])
+    def from_link(cls, link: Link):
+        return cls(id=link._id, value=link._value)

@@ -27,20 +27,20 @@ from sqlalchemy_bases.publisher_game import PublisherGame
 class Game(Base):
     __tablename__ = "game"
     id = mapped_column(Integer, primary_key=True)
-    name = mapped_column(Text)
-    thumbnail: Mapped[str | None] = mapped_column(Text)
-    image: Mapped[str | None] = mapped_column(Text)
-    description: Mapped[str | None] = mapped_column(Text)
-    year_published: Mapped[str | None] = mapped_column(Integer)
-    min_players: Mapped[str | None] = mapped_column(Integer)
-    max_players: Mapped[str | None] = mapped_column(Integer)
-    best_player_count: Mapped[str | None] = mapped_column(Integer)
-    language_dependence: Mapped[str | None] = mapped_column(Text)
-    recommended_player_counts: Mapped[str | None] = mapped_column(Text)
-    playing_time: Mapped[str | None] = mapped_column(Integer)
-    min_play_time: Mapped[str | None] = mapped_column(Integer)
-    max_play_time: Mapped[str | None] = mapped_column(Integer)
-    min_age: Mapped[str | None] = mapped_column(Integer)
+    name = mapped_column(Text, default=None)
+    thumbnail: Mapped[str | None] = mapped_column(Text, default=None)
+    image: Mapped[str | None] = mapped_column(Text, default=None)
+    description: Mapped[str | None] = mapped_column(Text, default=None)
+    year_published: Mapped[str | None] = mapped_column(Integer, default=None)
+    min_players: Mapped[str | None] = mapped_column(Integer, default=None)
+    max_players: Mapped[str | None] = mapped_column(Integer, default=None)
+    best_player_count: Mapped[str | None] = mapped_column(Integer, default=None)
+    language_dependence: Mapped[str | None] = mapped_column(Text, default=None)
+    recommended_player_counts: Mapped[str | None] = mapped_column(Text, default=None)
+    playing_time: Mapped[str | None] = mapped_column(Integer, default=None)
+    min_play_time: Mapped[str | None] = mapped_column(Integer, default=None)
+    max_play_time: Mapped[str | None] = mapped_column(Integer, default=None)
+    min_age: Mapped[str | None] = mapped_column(Integer, default=None)
 
     # Relationships
     artists = relationship("Artist", secondary="artist_game", back_populates="games")
@@ -75,7 +75,7 @@ class Game(Base):
 
     compilations = relationship(
         "Compilation",
-        foreign_keys=[Compilation.compilation_id],
+        foreign_keys=[Compilation.game_id],
         backref="compilation_game",
     )
     part_of_compilation = relationship(

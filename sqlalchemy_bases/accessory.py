@@ -3,6 +3,7 @@ from __future__ import annotations
 from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 
+from other_classes.link import Link
 from sqlalchemy_bases import Base
 
 
@@ -22,5 +23,5 @@ class Accessory(Base):
     )
 
     @classmethod
-    def from_link(cls, link):
-        return cls(original_id=link["@reference_id"], accessory_id=link["@id"])
+    def from_link(cls, link: Link):
+        return cls(original_id=link.reference_id, accessory_id=link._id)

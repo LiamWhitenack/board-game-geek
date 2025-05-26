@@ -26,16 +26,20 @@ class Item:
 
     @classmethod
     def from_json(cls, json: dict[str, Any]) -> Self:
+        id = json["@id"]
         best_player_count, recommended_player_counts = cls.extract_poll_summary(
-            json.get("poll")
+            json.get("poll-summary")
+        )
+        primary_name: dict = (
+            json["name"] if isinstance(json["name"], dict) else json["name"][0]
         )
         return cls(
             _type=json["@type"],
-            _id=json["@id"],
-            name=json["name"],
+            _id=id,
+            name=primary_name["@value"],
             description=json["description"],
             yearpublished=int(json.get("yearpublished", {}).get("@value", 0)),
-            links=[Link.from_json(link) for link in json["link"]],
+            links=[Link.from_json(link, id) for link in json["link"]],
             min_players=int(json.get("minplayers", {}).get("@value", 0)),
             max_players=int(json.get("maxplayers", {}).get("@value", 0)),
             best_player_count=best_player_count,
@@ -54,23 +58,10 @@ class Item:
         return name["@value"]
 
     @staticmethod
-    def extract_poll_summary(
-        poll: list[dict[str, list[dict[str, list[dict, str, str]]]]] | None,
-    ):
-        if poll is None:
-            return None, None
-        assert poll[0]["name"] == "suggested_numplayers"
-        suggested_num_players = poll[0]
-        best = None
-        recommended = None
-        for entry in suggested_num_players.get("results", []):
-            for result in entry.get("hjkgfc", []):
-                raise Exception()
-            if entry["@name"] == "bestwith":
-                best = entry["@value"]
-            elif entry["@name"] == "recommmendedwith":
-                recommended = entry["@value"]
-        return best, recommended
+    def extract_poll_summary(json):
+        return json.get("result", [{}, {}])[0].get("@value"), json.get(
+            "result", [{}, {}]
+        )[1].get("@value")
 
     @staticmethod
     def extract_language_dependence(item: dict[str, list]):
