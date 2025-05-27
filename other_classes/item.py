@@ -8,6 +8,7 @@ from other_classes.link import Link
 class Item:
     _type: str
     _id: str
+    url: str
     name: str
     description: str
     yearpublished: int
@@ -25,26 +26,27 @@ class Item:
     min_age: int | None = None
 
     @classmethod
-    def from_json(cls, json: dict[str, Any] | Literal["error"]) -> Self | None:
-        if json == "error":
+    def from_json(cls, json: dict[str, Any] | Literal["error"] | None) -> Self | None:
+        if json == "error" or json is None:
             return None
         try:
             id = json["@id"]
             best_player_count, recommended_player_counts = cls.extract_poll_summary(
-                json.get("poll-summary")
+                json.get("poll-summary", {})
             )
             primary_name: dict = (
                 json["name"] if isinstance(json["name"], dict) else json["name"][0]
             )
-            links = list(
-                filter(
-                    lambda link: link is not None,
-                    [Link.from_json(link, id) for link in json.get("link", [])],
-                )
-            )
+            links = [
+                link
+                for d in json.get("link", [])
+                if (link := Link.from_json(d, id)) is not None
+            ]
+
             return cls(
                 _type=json["@type"],
                 _id=id,
+                url=f"https://boardgamegeek.com/boardgame/{id}",
                 thumbnail=json.get("thumbnail"),
                 image=json.get("image"),
                 name=primary_name.get("@value", "Unknown"),
@@ -61,7 +63,7 @@ class Item:
                 max_play_time=int(json.get("maxplaytime", {}).get("@value", 0)),
                 min_age=int(json.get("minage", {}).get("@value", 0)),
             )
-        except KeyError:
+        except (KeyError, AttributeError):
             return None
 
     @staticmethod
@@ -71,7 +73,7 @@ class Item:
         return name["@value"]
 
     @staticmethod
-    def extract_poll_summary(json):
+    def extract_poll_summary(json: dict):
         return json.get("result", [{}, {}])[0].get("@value"), json.get(
             "result", [{}, {}]
         )[1].get("@value")

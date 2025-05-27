@@ -28,6 +28,7 @@ class Game(Base):
     __tablename__ = "game"
     id = mapped_column(Integer, primary_key=True)
     name = mapped_column(Text, default=None)
+    url: Mapped[str | None] = mapped_column(Text, default=None)
     thumbnail: Mapped[str | None] = mapped_column(Text, default=None)
     image: Mapped[str | None] = mapped_column(Text, default=None)
     description: Mapped[str | None] = mapped_column(Text, default=None)
@@ -98,9 +99,10 @@ class Game(Base):
 
         return cls(
             id=int(item._id),
+            name=item.name,
+            url=item.url,
             thumbnail=item.thumbnail,
             image=item.image,
-            name=item.name,
             description=item.description,
             year_published=item.yearpublished,
             min_players=item.min_players,
