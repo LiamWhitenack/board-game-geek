@@ -10,5 +10,8 @@ class Link:
     reference_id: str
 
     @classmethod
-    def from_json(cls, json: dict[str, str], reference_id: str) -> Self:
-        return cls(json["@type"], json["@id"], json["@value"], reference_id)
+    def from_json(cls, json: dict[str, str], reference_id: str) -> Self | None:
+        try:
+            return cls(json["@type"], json["@id"], json["@value"], reference_id)
+        except KeyError:
+            return None

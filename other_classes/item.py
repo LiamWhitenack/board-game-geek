@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Self
+from typing import Any, Literal, Self
 
 from other_classes.link import Link
 
@@ -25,7 +25,9 @@ class Item:
     min_age: int | None = None
 
     @classmethod
-    def from_json(cls, json: dict[str, Any]) -> Self | None:
+    def from_json(cls, json: dict[str, Any] | Literal["error"]) -> Self | None:
+        if json == "error":
+            return None
         try:
             id = json["@id"]
             best_player_count, recommended_player_counts = cls.extract_poll_summary(
@@ -33,6 +35,12 @@ class Item:
             )
             primary_name: dict = (
                 json["name"] if isinstance(json["name"], dict) else json["name"][0]
+            )
+            links = list(
+                filter(
+                    lambda link: link is not None,
+                    [Link.from_json(link, id) for link in json.get("link", [])],
+                )
             )
             return cls(
                 _type=json["@type"],
@@ -42,7 +50,7 @@ class Item:
                 name=primary_name.get("@value", "Unknown"),
                 description=json.get("description", ""),
                 yearpublished=int(json.get("yearpublished", {}).get("@value", 0)),
-                links=[Link.from_json(link, id) for link in json.get("link", [])],
+                links=links,
                 min_players=int(json.get("minplayers", {}).get("@value", 0)),
                 max_players=int(json.get("maxplayers", {}).get("@value", 0)),
                 best_player_count=best_player_count,
