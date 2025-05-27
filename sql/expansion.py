@@ -1,7 +1,7 @@
 from sqlalchemy import Column, ForeignKey, Integer
 
 from other_classes.link import Link
-from sqlalchemy_bases import Base
+from sql import Base
 
 
 class Expansion(Base):

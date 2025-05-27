@@ -7,21 +7,21 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from other_classes.item import Item
 from other_classes.link import Link
-from sqlalchemy_bases import Base
-from sqlalchemy_bases.accessory import Accessory
-from sqlalchemy_bases.artist import Artist
-from sqlalchemy_bases.artist_game import ArtistGame
-from sqlalchemy_bases.category import Category
-from sqlalchemy_bases.category_game import CategoryGame
-from sqlalchemy_bases.compilation import Compilation
-from sqlalchemy_bases.designer_game import DesignerGame
-from sqlalchemy_bases.expansion import Expansion
-from sqlalchemy_bases.family import Family
-from sqlalchemy_bases.family_game import FamilyGame
-from sqlalchemy_bases.implementation import Implementation
-from sqlalchemy_bases.mechanic import Mechanic
-from sqlalchemy_bases.publisher import Publisher
-from sqlalchemy_bases.publisher_game import PublisherGame
+from sql import Base
+from sql.accessory import Accessory
+from sql.artist import Artist
+from sql.artist_game import ArtistGame
+from sql.category import Category
+from sql.category_game import CategoryGame
+from sql.compilation import Compilation
+from sql.designer_game import DesignerGame
+from sql.expansion import Expansion
+from sql.family import Family
+from sql.family_game import FamilyGame
+from sql.implementation import Implementation
+from sql.mechanic import Mechanic
+from sql.publisher import Publisher
+from sql.publisher_game import PublisherGame
 
 
 class Game(Base):
@@ -31,15 +31,15 @@ class Game(Base):
     thumbnail: Mapped[str | None] = mapped_column(Text, default=None)
     image: Mapped[str | None] = mapped_column(Text, default=None)
     description: Mapped[str | None] = mapped_column(Text, default=None)
-    year_published: Mapped[str | None] = mapped_column(Integer, default=None)
-    min_players: Mapped[str | None] = mapped_column(Integer, default=None)
-    max_players: Mapped[str | None] = mapped_column(Integer, default=None)
-    best_player_count: Mapped[str | None] = mapped_column(Integer, default=None)
+    year_published: Mapped[int | None] = mapped_column(Integer, default=None)
+    min_players: Mapped[int | None] = mapped_column(Integer, default=None)
+    max_players: Mapped[int | None] = mapped_column(Integer, default=None)
+    best_player_count: Mapped[str | None] = mapped_column(Text, default=None)
     language_dependence: Mapped[str | None] = mapped_column(Text, default=None)
     recommended_player_counts: Mapped[str | None] = mapped_column(Text, default=None)
-    playing_time: Mapped[str | None] = mapped_column(Integer, default=None)
-    min_play_time: Mapped[str | None] = mapped_column(Integer, default=None)
-    max_play_time: Mapped[str | None] = mapped_column(Integer, default=None)
+    playing_time: Mapped[int | None] = mapped_column(Integer, default=None)
+    min_play_time: Mapped[int | None] = mapped_column(Integer, default=None)
+    max_play_time: Mapped[int | None] = mapped_column(Integer, default=None)
     min_age: Mapped[str | None] = mapped_column(Integer, default=None)
 
     # Relationships

@@ -4,7 +4,7 @@ from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 
 from other_classes.link import Link
-from sqlalchemy_bases import Base
+from sql import Base
 
 
 class Accessory(Base):

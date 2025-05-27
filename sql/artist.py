@@ -2,15 +2,15 @@ from sqlalchemy import Column, Integer, Text
 from sqlalchemy.orm import relationship
 
 from other_classes.link import Link
-from sqlalchemy_bases import Base
+from sql import Base
 
 
-class Designer(Base):
-    __tablename__ = "designer"
+class Artist(Base):
+    __tablename__ = "artist"
     id = Column(Integer, primary_key=True)
     value = Column(Text)
 
-    games = relationship("Game", secondary="designer_game", back_populates="designers")
+    games = relationship("Game", secondary="artist_game", back_populates="artists")
 
     @classmethod
     def from_link(cls, link: Link):

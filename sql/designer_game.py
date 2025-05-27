@@ -1,6 +1,6 @@
 from sqlalchemy import Column, ForeignKey, Integer
 
-from sqlalchemy_bases import Base
+from sql import Base
 
 
 class DesignerGame(Base):
