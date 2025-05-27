@@ -21,7 +21,6 @@ from sql.publisher_game import PublisherGame
 DATABASE_URL = "postgresql+psycopg2://lwhitenack:testpword@localhost:5432/bgg-db"
 engine = create_engine(DATABASE_URL, echo=True)
 
-Base.metadata.drop_all(engine)
 Base.metadata.create_all(engine)
 
 # Create a configured "Session" class
