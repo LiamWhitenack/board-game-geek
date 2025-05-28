@@ -5,7 +5,7 @@ import requests
 from xmltodict import parse
 
 from fetch.seen import SEEN_GAMES, SEEN_LINKS
-from fetch.utils import LINK_MAP, MAKE_A_NEW_GAME
+from fetch.utils import ASSOCIATION_MAP, LINK_MAP, MAKE_A_NEW_GAME
 from other_classes.item import Item
 from sql import Base
 from sql.game import Game
@@ -36,15 +36,17 @@ def get_from_bgg(things: Iterable[int]) -> Iterable[Base]:
         if item is None:
             continue
         SEEN_GAMES.add(item._id)
-        yield (Game.from_item(item))
+        yield Game.from_item(item)
         for link in item.links:
             if link._id in SEEN_LINKS.get(link._type, set()):
                 continue
             if (base := LINK_MAP.get(link._type)) is not None:
                 if link._type in MAKE_A_NEW_GAME:
                     if link._id not in SEEN_GAMES:
-                        yield (Game.from_link(link))
+                        yield Game.from_link(link)
                         SEEN_GAMES.add(link._id)
                 if link._id not in (seen_links := SEEN_LINKS.get(link._type, set())):
                     seen_links.add(link._id)
-                    yield (base.from_link(link))  # type: ignore[attr-defined]
+                    yield base.from_link(link)  # type: ignore[attr-defined]
+            if (association := ASSOCIATION_MAP.get(link._type)) is not None:
+                yield association.from_link(link)  # type: ignore[attr-defined]
