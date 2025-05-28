@@ -3,6 +3,7 @@ from sql.artist import Artist
 from sql.artist_game import ArtistGame
 from sql.category import Category
 from sql.category_game import CategoryGame
+from sql.compilation import Compilation
 from sql.designer import Designer
 from sql.designer_game import DesignerGame
 from sql.expansion import Expansion
@@ -23,6 +24,7 @@ LINK_MAP = dict(
     boardgamepublisher=Publisher,
     boardgameimplementation=Implementation,
     boardgameexpansion=Expansion,
+    boardgamecompilation=Compilation,
 )
 ASSOCIATION_MAP = dict(
     boardgamecategory=CategoryGame,
@@ -34,7 +36,7 @@ ASSOCIATION_MAP = dict(
 MAKE_A_NEW_GAME = {
     "boardgameaccessory",
     "boardgameimplementation",
-    "boardgameexpansion",
+    "boardgamecompilation",
     "boardgameexpansion",
     "boardgameexpansion",
 }
