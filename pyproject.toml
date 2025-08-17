@@ -8,7 +8,9 @@ dependencies = [
     "isort>=6.0.1",
     "mypy>=1.15.0",
     "psycopg2-binary>=2.9.10",
+    "requests>=2.32.4",
     "sqlalchemy>=2.0.41",
     "types-requests>=2.32.0.20250515",
     "types-xmltodict>=0.14.0.20241009",
+    "xmltodict>=0.14.2",
 ]
