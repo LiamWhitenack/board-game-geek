@@ -97,7 +97,7 @@ class Item:
                 name = rank.get("@name")
                 value = rank.get("@value")
                 if name not in subtype_map:
-                    raise ValueError(f"Unrecognized rank subtype: {name}")
+                    continue
                 try:
                     if value != "Not Ranked":
                         rank_values[subtype_map[name]] = int(value)  # type: ignore
