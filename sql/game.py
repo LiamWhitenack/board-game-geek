@@ -1,31 +1,20 @@
 from __future__ import annotations
 
-from typing import Optional
-
-from sqlalchemy import Column, Integer, Text
+from sqlalchemy import Float, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from other_classes.item import Item
 from other_classes.link import Link
 from sql import Base
 from sql.accessory import Accessory
-from sql.artist import Artist
-from sql.artist_game import ArtistGame
-from sql.category import Category
-from sql.category_game import CategoryGame
 from sql.compilation import Compilation
-from sql.designer_game import DesignerGame
 from sql.expansion import Expansion
-from sql.family import Family
-from sql.family_game import FamilyGame
 from sql.implementation import Implementation
-from sql.mechanic import Mechanic
-from sql.publisher import Publisher
-from sql.publisher_game import PublisherGame
 
 
 class Game(Base):
     __tablename__ = "game"
+
     id = mapped_column(Integer, primary_key=True)
     name = mapped_column(Text, default=None)
     url: Mapped[str | None] = mapped_column(Text, default=None)
@@ -41,7 +30,32 @@ class Game(Base):
     playing_time: Mapped[int | None] = mapped_column(Integer, default=None)
     min_play_time: Mapped[int | None] = mapped_column(Integer, default=None)
     max_play_time: Mapped[int | None] = mapped_column(Integer, default=None)
-    min_age: Mapped[str | None] = mapped_column(Integer, default=None)
+    min_age: Mapped[int | None] = mapped_column(Integer, default=None)
+
+    # ratings/statistics
+    usersrated: Mapped[int | None] = mapped_column(Integer, default=None)
+    average: Mapped[float | None] = mapped_column(Float, default=None)
+    bayesaverage: Mapped[float | None] = mapped_column(Float, default=None)
+    stddev: Mapped[float | None] = mapped_column(Float, default=None)
+    median: Mapped[float | None] = mapped_column(Float, default=None)
+    owned: Mapped[int | None] = mapped_column(Integer, default=None)
+    trading: Mapped[int | None] = mapped_column(Integer, default=None)
+    wanting: Mapped[int | None] = mapped_column(Integer, default=None)
+    wishing: Mapped[int | None] = mapped_column(Integer, default=None)
+    numcomments: Mapped[int | None] = mapped_column(Integer, default=None)
+    numweights: Mapped[int | None] = mapped_column(Integer, default=None)
+    averageweight: Mapped[float | None] = mapped_column(Float, default=None)
+
+    # rank subtype columns
+    rank_all: Mapped[int | None] = mapped_column(Integer, default=None)
+    rank_abstract: Mapped[int | None] = mapped_column(Integer, default=None)
+    rank_childrens: Mapped[int | None] = mapped_column(Integer, default=None)
+    rank_customizable: Mapped[int | None] = mapped_column(Integer, default=None)
+    rank_family: Mapped[int | None] = mapped_column(Integer, default=None)
+    rank_party: Mapped[int | None] = mapped_column(Integer, default=None)
+    rank_strategy: Mapped[int | None] = mapped_column(Integer, default=None)
+    rank_thematic: Mapped[int | None] = mapped_column(Integer, default=None)
+    rank_wargames: Mapped[int | None] = mapped_column(Integer, default=None)
 
     # Relationships
     artists = relationship("Artist", secondary="artist_game", back_populates="games")
@@ -96,7 +110,6 @@ class Game(Base):
 
     @classmethod
     def from_item(cls, item: Item):
-
         return cls(
             id=int(item._id),
             name=item.name,
@@ -114,6 +127,29 @@ class Game(Base):
             min_play_time=item.min_play_time,
             max_play_time=item.max_play_time,
             min_age=item.min_age,
+            # ratings/statistics
+            usersrated=item.usersrated,
+            average=item.average,
+            bayesaverage=item.bayesaverage,
+            stddev=item.stddev,
+            median=item.median,
+            owned=item.owned,
+            trading=item.trading,
+            wanting=item.wanting,
+            wishing=item.wishing,
+            numcomments=item.numcomments,
+            numweights=item.numweights,
+            averageweight=item.averageweight,
+            # rank subtype columns
+            rank_all=item.rank_all,
+            rank_abstract=item.rank_abstract,
+            rank_childrens=item.rank_childrens,
+            rank_customizable=item.rank_customizable,
+            rank_family=item.rank_family,
+            rank_party=item.rank_party,
+            rank_strategy=item.rank_strategy,
+            rank_thematic=item.rank_thematic,
+            rank_wargames=item.rank_wargames,
         )
 
     @classmethod
@@ -137,3 +173,28 @@ class Game(Base):
         self.min_play_time = item.min_play_time  # type: ignore[assignment]
         self.max_play_time = item.max_play_time  # type: ignore[assignment]
         self.min_age = item.min_age  # type: ignore[assignment]
+
+        # ratings/statistics
+        self.usersrated = item.usersrated
+        self.average = item.average
+        self.bayesaverage = item.bayesaverage
+        self.stddev = item.stddev
+        self.median = item.median
+        self.owned = item.owned
+        self.trading = item.trading
+        self.wanting = item.wanting
+        self.wishing = item.wishing
+        self.numcomments = item.numcomments
+        self.numweights = item.numweights
+        self.averageweight = item.averageweight
+
+        # rank subtype columns
+        self.rank_all = item.rank_all
+        self.rank_abstract = item.rank_abstract
+        self.rank_childrens = item.rank_childrens
+        self.rank_customizable = item.rank_customizable
+        self.rank_family = item.rank_family
+        self.rank_party = item.rank_party
+        self.rank_strategy = item.rank_strategy
+        self.rank_thematic = item.rank_thematic
+        self.rank_wargames = item.rank_wargames

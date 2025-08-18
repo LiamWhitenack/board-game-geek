@@ -14,4 +14,4 @@ for i in range(1, 10_000):
     if not at_least_one_added:
         break
     session.commit()
-    sleep(5)
+    sleep(2)

@@ -14,7 +14,7 @@ from sql.game import Game
 def fetch_things(
     ids: Iterable[int], max_retries: int = 5, retries: int = 0
 ) -> list[dict]:
-    url = f"https://www.boardgamegeek.com/xmlapi2/thing?id={','.join(map(str, ids))}"
+    url = f"https://www.boardgamegeek.com/xmlapi2/thing?id={','.join(map(str, ids))}&stats=1"
     retries = 0
     while retries < max_retries:
         response = requests.get(url)

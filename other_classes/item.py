@@ -13,6 +13,8 @@ class Item:
     description: str
     yearpublished: int
     links: list[Link]
+
+    # existing optional fields
     thumbnail: str | None = None
     image: str | None = None
     min_players: int | None = None
@@ -24,6 +26,31 @@ class Item:
     min_play_time: int | None = None
     max_play_time: int | None = None
     min_age: int | None = None
+
+    # ratings / stats (from statistics/ratings)
+    usersrated: int | None = None
+    average: float | None = None
+    bayesaverage: float | None = None
+    stddev: float | None = None
+    median: float | None = None
+    owned: int | None = None
+    trading: int | None = None
+    wanting: int | None = None
+    wishing: int | None = None
+    numcomments: int | None = None
+    numweights: int | None = None
+    averageweight: float | None = None
+
+    # rank subtype columns (None if not ranked)
+    rank_all: int | None = None
+    rank_abstract: int | None = None
+    rank_childrens: int | None = None
+    rank_customizable: int | None = None
+    rank_family: int | None = None
+    rank_party: int | None = None
+    rank_strategy: int | None = None
+    rank_thematic: int | None = None
+    rank_wargames: int | None = None
 
     @classmethod
     def from_json(cls, json: dict[str, Any] | Literal["error"] | None) -> Self | None:
@@ -42,6 +69,40 @@ class Item:
                 for d in json.get("link", [])
                 if (link := Link.from_json(d, id)) is not None
             ]
+
+            ratings = json.get("statistics", {}).get("ratings", {})
+            ranks = ratings.get("ranks", {}).get("rank", [])
+
+            # Ensure ranks is always iterable
+            if isinstance(ranks, dict):
+                ranks = [ranks]
+
+            # Prepare subtype → column mapping
+            subtype_map = {
+                "boardgame": "rank_all",
+                "abstracts": "rank_abstract",
+                "childrensgames": "rank_childrens",
+                "cgs": "rank_customizable",
+                "familygames": "rank_family",
+                "partygames": "rank_party",
+                "strategygames": "rank_strategy",
+                "thematic": "rank_thematic",
+                "wargames": "rank_wargames",
+            }
+
+            # Defaults
+            rank_values: dict[str, int | None] = {v: None for v in subtype_map.values()}
+
+            for rank in ranks:
+                name = rank.get("@name")
+                value = rank.get("@value")
+                if name not in subtype_map:
+                    raise ValueError(f"Unrecognized rank subtype: {name}")
+                try:
+                    if value != "Not Ranked":
+                        rank_values[subtype_map[name]] = int(value)  # type: ignore
+                except (TypeError, ValueError):
+                    rank_values[subtype_map[name]] = None
 
             return cls(
                 _type=json["@type"],
@@ -62,8 +123,25 @@ class Item:
                 min_play_time=int(json.get("minplaytime", {}).get("@value", 0)),
                 max_play_time=int(json.get("maxplaytime", {}).get("@value", 0)),
                 min_age=int(json.get("minage", {}).get("@value", 0)),
+                # ratings fields
+                usersrated=int(ratings.get("usersrated", {}).get("@value", 0)),
+                average=float(ratings.get("average", {}).get("@value", 0.0)),
+                bayesaverage=float(ratings.get("bayesaverage", {}).get("@value", 0.0)),
+                stddev=float(ratings.get("stddev", {}).get("@value", 0.0)),
+                median=float(ratings.get("median", {}).get("@value", 0.0)),
+                owned=int(ratings.get("owned", {}).get("@value", 0)),
+                trading=int(ratings.get("trading", {}).get("@value", 0)),
+                wanting=int(ratings.get("wanting", {}).get("@value", 0)),
+                wishing=int(ratings.get("wishing", {}).get("@value", 0)),
+                numcomments=int(ratings.get("numcomments", {}).get("@value", 0)),
+                numweights=int(ratings.get("numweights", {}).get("@value", 0)),
+                averageweight=float(
+                    ratings.get("averageweight", {}).get("@value", 0.0)
+                ),
+                # rank subtype fields
+                **rank_values,
             )
-        except (KeyError, AttributeError):
+        except (KeyError, AttributeError, ValueError):
             return None
 
     @staticmethod
