@@ -57,6 +57,8 @@ class Item:
         if json == "error" or json is None:
             return None
         try:
+            if "name" not in json or json == "name":
+                return None
             id = json["@id"]
             best_player_count, recommended_player_counts = cls.extract_poll_summary(
                 json.get("poll-summary", {})
@@ -64,11 +66,17 @@ class Item:
             primary_name: dict = (
                 json["name"] if isinstance(json["name"], dict) else json["name"][0]
             )
-            links = [
-                link
-                for d in json.get("link", [])
-                if (link := Link.from_json(d, id)) is not None
-            ]
+            links_info = json.get("link", [])
+            if isinstance(links_info, list):
+                links = [
+                    link
+                    for d in links_info
+                    if (link := Link.from_json(d, id)) is not None
+                ]
+            elif (link := Link.from_json(links_info, id)) is not None:
+                links = [link]
+            else:
+                links = []
 
             ratings = json.get("statistics", {}).get("ratings", {})
             ranks = ratings.get("ranks", {}).get("rank", [])
