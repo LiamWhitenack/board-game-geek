@@ -19,15 +19,14 @@ def fetch_things(
     while retries < max_retries:
         response = requests.get(url)
         if response.status_code == 200:
-            return parse(response.text)["items"].get("item", [])  # type: ignore[index]
+            return parse(response.text)["items"].get("item", []) 
         elif response.status_code == 202:
             print("BGG says: not ready yet (202). Waiting...")
             time.sleep(5)
             retries += 1
             return fetch_things(ids, max_retries, retries)
         else:
-            print(f"Unexpected status: {response.status_code}")
-            break
+            raise Exception(f"Unexpected status: {response.status_code}")
     raise Exception()
 
 
@@ -47,6 +46,6 @@ def get_from_bgg(things: Iterable[int]) -> Iterable[Base]:
                         SEEN_GAMES.add(link._id)
                 if link._id not in (seen_links := SEEN_LINKS.get(link._type, set())):
                     seen_links.add(link._id)
-                    yield base.from_link(link)  # type: ignore[attr-defined]
+                    yield base.from_link(link)  
             if (association := ASSOCIATION_MAP.get(link._type)) is not None:
-                yield association.from_link(link)  # type: ignore[attr-defined]
+                yield association.from_link(link)  

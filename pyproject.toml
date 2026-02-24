@@ -13,6 +13,7 @@ dependencies = [
     "requests>=2.32.4",
     "seaborn>=0.13.2",
     "sqlalchemy>=2.0.41",
+    "ty>=0.0.18",
     "types-requests>=2.32.0.20250515",
     "types-xmltodict>=0.14.0.20241009",
     "xmltodict>=0.14.2",
