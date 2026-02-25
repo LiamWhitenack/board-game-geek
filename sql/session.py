@@ -8,6 +8,8 @@ from sql.artist_game import ArtistGame
 from sql.category import Category
 from sql.category_game import CategoryGame
 from sql.compilation import Compilation
+from sql.designer import Designer
+from sql.designer_game import DesignerGame
 from sql.expansion import Expansion
 from sql.family import Family
 from sql.family_game import FamilyGame
@@ -19,7 +21,7 @@ from sql.publisher_game import PublisherGame
 
 # Replace 'your_database.db' with your actual database file name
 DATABASE_URL = "postgresql+psycopg2://lwhitenack:testpword@localhost:5432/bgg-db"
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(DATABASE_URL, echo=False)
 
 Base.metadata.create_all(engine)
 
