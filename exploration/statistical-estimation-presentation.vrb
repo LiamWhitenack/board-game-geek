@@ -1,0 +1,17 @@
+\frametitle{Fetching Game Data from BoardGameGeek}
+
+\begin{verbatim}
+def fetch_things(
+    ids: Iterable[int], max_retries: int, retries: int
+) -> list[dict]:
+    url = f"`url`/thing?id={','.join(map(str, ids))}&stats=1"
+    retries = 0
+    while retries < max_retries:
+        response = requests.get(url)
+        if response.status_code == 200:
+            return parse(response.text)["items"]["item"]
+        else:
+            time.sleep(5)
+    raise Exception()
+\end{verbatim}
+

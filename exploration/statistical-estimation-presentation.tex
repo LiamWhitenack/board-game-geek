@@ -1,139 +1,205 @@
 \documentclass{beamer}
 
-% -------------------------
-% Theme & Earthy Colors
-% -------------------------
-\usetheme{Madrid}
-
-\definecolor{EarthGreen}{RGB}{85,107,47}
-\definecolor{ClayBrown}{RGB}{150,111,51}
-\definecolor{Sand}{RGB}{235,224,205}
-\definecolor{DeepOlive}{RGB}{60,75,40}
-
-\setbeamercolor{structure}{fg=EarthGreen}
-\setbeamercolor{title}{fg=DeepOlive}
-\setbeamercolor{frametitle}{fg=DeepOlive,bg=Sand}
-\setbeamercolor{block title}{fg=white,bg=ClayBrown}
-\setbeamercolor{block body}{bg=Sand!30}
-\setbeamertemplate{navigation symbols}{}
-
-% -------------------------
-% Packages
-% -------------------------
-\usepackage{graphicx}
-\usepackage{amsmath}
+\usepackage{xcolor}
 \usepackage{hyperref}
 
-% -------------------------
-% Title
-% -------------------------
-\title{Statistical Estimation via OLS and MLE}
-\author{Liam Whitenack \\ 
-DASC 605 \\ 
-Professor Trent Buskirk \\ 
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue
+}
+% -------------------------------------------------
+% Theme and Styling
+% -------------------------------------------------
+
+\usetheme{Madrid}
+
+
+
+% Remove navigation symbols and footer
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{}
+
+
+% --- Custom Header (Makes Title Clearly Visible) ---
+\setbeamertemplate{frametitle}{
+    \vspace{0.2em}
+    \begin{beamercolorbox}[wd=\paperwidth,ht=3ex,dp=1.2ex,
+        leftskip=1em,rightskip=1em]{frametitle}
+        \usebeamerfont{frametitle}\insertframetitle
+    \end{beamercolorbox}
+}
+
+% Old Dominion University-inspired colors
+\definecolor{ODUNavy}{RGB}{0,38,84}
+\definecolor{ODUSilver}{RGB}{167,169,172}
+
+\setbeamercolor{title}{fg=ODUNavy}
+\setbeamercolor{frametitle}{fg=white,bg=ODUNavy}
+\setbeamercolor{structure}{fg=ODUNavy}
+\setbeamercolor{normal text}{fg=black,bg=white}
+
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+% -------------------------------------------------
+% Title Information
+% -------------------------------------------------
+
+\title{Statistical Estimation for BGG Ratings}
+
+\author{Liam Whitenack \\
+DASC 605 \\
+Professor Trent Buskirk \\
 Old Dominion University}
+
 \date{\today}
 
+% -------------------------------------------------
 \begin{document}
+% -------------------------------------------------
 
-% -------------------------
-\begin{frame}
-\titlepage
+% Title Slide
+\begin{frame}[plain]
+\centering
+
+\vspace{1.5cm}
+
+{\Huge\bfseries\textcolor{ODUNavy}{Statistical Estimation for BGG Ratings}}
+
+\vspace{1cm}
+
+{\large Liam Whitenack}
+
+DASC 605
+
+Professor Trent Buskirk
+
+Old Dominion University
+
+\vspace{1cm}
+
+{\small \today}
+
 \end{frame}
 
-% -------------------------
+% -------------------------------------------------
+% Data Slide
+% -------------------------------------------------
+
 \begin{frame}{Data}
 \small
 \begin{itemize}
-    \item Dataset collected in Fall 2025
-    \item Source: \href{https://boardgamegeek.com/wiki/page/BGG_XML_API2}{BoardGameGeek XML API Documentation}
-    \item Additional reference: 
-    \href{https://boardgamegeek.com/wiki/page/BGG_XML_API?redirectedfrom=XML_API}{BGG API Overview}
-    \item Processing code available on 
-    \href{https://github.com/LiamWhitenack/board-game-geek.git}{GitHub Repository}
-    \item Target variable: Bayesian average rating ($Y$)
-    \item Predictors: year published, complexity, playing time, player characteristics
-    \item Final sample size: 3,833 games (minimum 1000 ratings)
+\item Collected in August 2025 and March 2026
+\item Source: \href{https://boardgamegeek.com/wiki/page/BGG_XML_API2}{BoardGameGeek XML API}
+\item Processing code: \href{https://github.com/LiamWhitenack/board-game-geek.git}{GitHub Repository}
+\item A much more minimal copy can be downloaded by pressing this \href{https://boardgamegeek.com/data_dumps/bg_ranks}{link}
 \end{itemize}
 \end{frame}
 
-% -------------------------
-\begin{frame}{Research Goal}
-\centering
-\Large
-Estimate the relationship between game characteristics and average rating
-\\[0.4cm]
-Using a linear regression framework grounded in \textbf{Maximum Likelihood Estimation}
-\end{frame}
-
-% -------------------------
-\begin{frame}{Statistical Model}
-
-\[
-Y_i = \beta_0 + \beta_1 X_{i1} + \dots + \beta_k X_{ik} + \varepsilon_i
-\]
-
-\[
-\varepsilon_i \sim \mathcal{N}(0, \sigma^2)
-\]
-
-\bigskip
-
-Under the normality assumption:
-
-\[
-\hat{\beta} = \arg\max_{\beta} L(\beta)
-\]
-
-Maximizing the likelihood is equivalent to minimizing squared error.
-
-\[
-\Rightarrow \textbf{Ordinary Least Squares}
-\]
-
-Thus, OLS is the MLE estimator under Gaussian errors.
-\end{frame}
-
-% -------------------------
-\begin{frame}{Estimation in Python}
+\begin{frame}[fragile]{Fetching Game Data from BoardGameGeek}
 
 \begin{verbatim}
-model = sm.OLS(y, X)
-results = model.fit()
-
-print(results.summary())
+def fetch_things(
+    ids: Iterable[int], max_retries: int, retries: int
+) -> list[dict]:
+    url = f"`url`/thing?id={','.join(map(str, ids))}&stats=1"
+    retries = 0
+    while retries < max_retries:
+        response = requests.get(url)
+        if response.status_code == 200:
+            return parse(response.text)["items"]["item"]
+        else:
+            time.sleep(5)
+    raise Exception()
 \end{verbatim}
 
-This implements Ordinary Least Squares, 
-which corresponds to the MLE solution under normal errors.
 \end{frame}
 
-% -------------------------
-\begin{frame}{Pre-Regression Distribution}
+% -------------------------------------------------
+% Full-Screen Graph Slides
+% -------------------------------------------------
 
-\begin{center}
-\includegraphics[width=0.8\linewidth]{pre_violin.png}
-\end{center}
+\begin{frame}{Distribution of Ratings}
+\centering
+\includegraphics[
+width=\paperwidth,
+height=\paperheight,
+keepaspectratio
+]{plots/2025-Ratings-Histogram.png}
+\end{frame}
+
+\begin{frame}{Games Published Per Year}
+\centering
+\includegraphics[
+width=\paperwidth,
+height=\paperheight,
+keepaspectratio
+]{plots/Board-Games-Published-Per-Year-(Since-2000).png}
+\end{frame}
+
+\begin{frame}{Mean Rating by Year}
+\centering
+\includegraphics[
+width=\paperwidth,
+height=\paperheight,
+keepaspectratio
+]{plots/Mean-Rating-By-Year-(Since-2000).png}
+\end{frame}
+
+\begin{frame}{Confidence Interval for Mean Rating}
+
+\textbf{Goal:} Estimate a confidence interval for the true mean rating of a game.
+
+\begin{itemize}
+\item Uses the \textbf{t-distribution} because the population standard deviation is unknown.
+\item Standard error is computed from the sample ratings.
+\item Degrees of freedom: $df = n - 1$
+\end{itemize}
+
+\medskip
+
+\textbf{Implementation}
+
+\begin{verbatim}
+def confidence_interval_t(self, confidence: float = 0.95) -> tuple[float, float]:
+    self._validate_rating_data()
+
+    se = self._standard_error()
+    df = self.usersrated - 1
+    t_crit = stats.t.ppf((1 + confidence) / 2, df)
+
+    margin = t_crit * se
+    return (self.average - margin, self.average + margin)
+\end{verbatim}
 
 \end{frame}
 
-% -------------------------
-\begin{frame}{OLS Fit}
-
-\begin{center}
-\includegraphics[width=0.6\linewidth]{ols_residuals.png}
-\end{center}
-
+\begin{frame}{Top 25 Games}
+\centering
+\includegraphics[
+width=\linewidth,
+height=0.9\textheight,
+keepaspectratio
+]{plots/Top-25-Games-Ratings-Confidence-Interval.png}
 \end{frame}
 
-% -------------------------
-\begin{frame}{Residual Distribution}
-
-\begin{center}
-\includegraphics[width=0.8\linewidth]{residual_violin.png}
-\end{center}
-
+\begin{frame}{Top 25 Games vs. 2025 Releases}
+\centering
+\includegraphics[
+width=\linewidth,
+height=0.9\textheight,
+keepaspectratio
+]{plots/Top-25-Games-of-2025-Ratings-Confidence-Interval.png}
 \end{frame}
 
+\begin{frame}{Updated 2025 Comparison}
+\centering
+\includegraphics[
+width=\linewidth,
+height=0.9\textheight,
+keepaspectratio
+]{plots/Top-25-Games-of-2025-Ratings-Confidence-Interval-Updated.png}
+\end{frame}
 
 \end{document}

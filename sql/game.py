@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from math import sqrt
+
+from scipy import stats
 from sqlalchemy import Float, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -198,3 +201,112 @@ class Game(Base):
         self.rank_strategy = item.rank_strategy
         self.rank_thematic = item.rank_thematic
         self.rank_wargames = item.rank_wargames
+
+    def _validate_rating_data(self) -> None:
+        if not all(
+            [
+                self.average is not None,
+                self.stddev is not None,
+                self.usersrated is not None,
+            ]
+        ):
+            raise ValueError("average, stddev, and usersrated must not be None.")
+
+        if self.usersrated < 2:
+            raise ValueError("usersrated must be at least 2.")
+
+    def _standard_error(self) -> float:
+        return self.stddev / sqrt(self.usersrated)
+
+    def confidence_interval_t(self, confidence: float = 0.95) -> tuple[float, float]:
+        self._validate_rating_data()
+
+        se = self._standard_error()
+        df = self.usersrated - 1
+        t_crit = stats.t.ppf((1 + confidence) / 2, df)
+
+        margin = t_crit * se
+        return (self.average - margin, self.average + margin)
+
+    def confidence_interval_z(self, confidence: float = 0.95) -> tuple[float, float]:
+        """
+        Normal (z) confidence interval for the mean rating.
+        """
+        self._validate_rating_data()
+
+        se = self._standard_error()
+        z_crit = stats.norm.ppf((1 + confidence) / 2)
+
+        margin = z_crit * se
+        return (self.average - margin, self.average + margin)
+
+    def confidence_interval_bootstrap_normal(
+        self,
+        confidence: float = 0.95,
+    ) -> tuple[float, float]:
+        """
+        Parametric bootstrap assuming normal sampling distribution.
+        """
+        self._validate_rating_data()
+
+        se = self._standard_error()
+        z = stats.norm.ppf((1 + confidence) / 2)
+
+        margin = z * se
+        return (self.average - margin, self.average + margin)
+
+    def confidence_interval_bayesian_normal(
+        self,
+        prior_mean: float,
+        prior_variance: float,
+        confidence: float = 0.95,
+    ) -> tuple[float, float]:
+        """
+        Simple normal-normal Bayesian credible interval.
+        """
+        self._validate_rating_data()
+
+        n = self.usersrated
+        sample_mean = self.average
+        sample_var = self.stddev**2
+
+        # Posterior variance
+        posterior_variance = 1 / (n / sample_var + 1 / prior_variance)
+
+        # Posterior mean
+        posterior_mean = posterior_variance * (
+            n * sample_mean / sample_var + prior_mean / prior_variance
+        )
+
+        z = stats.norm.ppf((1 + confidence) / 2)
+        margin = z * sqrt(posterior_variance)
+
+        return (posterior_mean - margin, posterior_mean + margin)
+
+    def confidence_interval_wilson(
+        self,
+        confidence: float = 0.95,
+    ) -> tuple[float, float]:
+        """
+        Wilson confidence interval.
+        Only appropriate for proportions (0–1 data).
+        """
+
+        if self.average is None or self.usersrated is None:
+            raise ValueError("average and usersrated must not be None.")
+
+        n = self.usersrated
+        p_hat = self.average * 0.1
+
+        if not (0 <= p_hat <= 1):
+            raise ValueError("Wilson interval requires a proportion between 0 and 1.")
+
+        z = stats.norm.ppf((1 + confidence) / 2)
+
+        denominator = 1 + (z**2) / n
+
+        center = (p_hat + (z**2) / (2 * n)) / denominator
+
+        margin = z / denominator * sqrt((p_hat * (1 - p_hat)) / n + (z**2) / (4 * n**2))
+
+        return ((center - margin) * 10, (center + margin) * 10)
