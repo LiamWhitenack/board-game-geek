@@ -1,6 +1,10 @@
 *.gz
 %OUTDIR%/*
 
+exploration/byod/*
+!exploration/byod/*.tex
+!exploration/byod/*.pdf
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

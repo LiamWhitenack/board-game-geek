@@ -13,6 +13,54 @@ from pandas import Series
 
 from exploration.themes import EARTH
 
+# Example EARTH theme colors (replace with your actual palette)
+EARTH = {
+    "accent": "#7f6d5f",  # bar color
+    "zero": "#000000",  # edge color
+}
+
+
+# --------------------------------------------------
+# Reusable barchart function
+# --------------------------------------------------
+def barchart(
+    x,
+    y,
+    figsize: tuple[int, int] = (8, 5),
+    filename: str = "barchart",
+    x_label: str | None = None,
+    y_label: str = "Value",
+) -> None:
+
+    fig, ax = subplots(figsize=figsize)
+
+    # Use EARTH accent for bars (minimal, clean)
+    ax.bar(
+        x,
+        y,
+        color=EARTH["accent"],
+        edgecolor=EARTH["zero"],
+        linewidth=0.8,
+    )
+
+    # --- Minimal styling ---
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+    if x_label is not None:
+        ax.set_xlabel(x_label)
+
+    ax.set_ylabel(y_label)
+
+    # --- Title from filename ---
+    clean_name = Path(filename).stem
+    title = clean_name.replace("_", " ").replace("-", " ").title()
+    # ax.set_title(title, pad=12)
+
+    tight_layout()
+    savefig(f"exploration/plots/{clean_name}.png")
+    plt.close()
+
 
 def set_fixed_axis_geometry(axis):
     """
